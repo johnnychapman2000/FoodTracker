@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Food Entry</title>
+
+<script src="../JS/API.js?v=2"></script>
+<script src="../JS/NutritionAPI.js?v=4"></script>
+<script src="../JS/navigation.js?v=2"></script>
+<script src="../JS/FoodMasterAPI.js?v=3"></script>
+<link rel="stylesheet" href="../CSS/navigation.css?v=1">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#061326;
+    color:white;
+    font-family:Arial,sans-serif;
+    padding:15px;
+    padding-bottom:100px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.header h1{
+    font-size:32px;
+}
+
+.header p{
+    color:#bbb;
+    margin-top:5px;
+}
+
+.card{
+    background:#0d1b35;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+
+.card-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.line{
+    width:80px;
+    height:4px;
+    background:#ff5b67;
+    margin:10px auto 20px auto;
+    border-radius:10px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    margin-bottom:15px;
+    font-size:16px;
+}
+
+.save-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#46d369;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.save-btn:disabled{
+    background:#555;
+    cursor:not-allowed;
+    opacity:.6;
+}
+
+.analyze-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#3b82f6;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:15px;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    padding:5px 0;
+}
+
+.back-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#ff5b67;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.preview{
+    margin-top:10px;
+    color:#46d369;
+    text-align:center;
+}
+
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#08192f;
+    display:flex;
+    justify-content:space-around;
+    padding:15px;
+}
+
+.bottom-nav a{
+    color:white;
+    text-decoration:none;
+    text-align:center;
+    font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🍔 Food Entry</h1>
+        <p>Log Today's Food Intake</p>
+    </div>
+
+    <div class="card">
+
+        <div class="card-title">
+            Add New Entry
+        </div>
+
+        <div class="line"></div>
+
+        <label>Food Name</label>
+
+<button class="analyze-btn" onclick="analyzeFood()">
+    🤖 Analyze Food
+</button>
+
+        <input
+            type="text"
+            id="foodName"
+            placeholder="Example: McChicken"
+        >
+
+        <label>Quantity</label>
+
+        <input
+            type="number"
+            id="quantity"
+            value="1"
+            min="1"
+        >
+
+        <label>Meal Type</label>
+
+        <select id="mealType">
+            <option>Breakfast</option>
+            <option>Lunch</option>
+            <option>Dinner</option>
+            <option>Snack</option>
+        </select>
+
+        <label>Notes (Optional)</label>
+
+        <textarea
+            id="notes"
+            rows="3"
+            placeholder="Extra details..."
+        ></textarea>
+
+<div class="card">
+
+<div class="card">
+
+    <div class="card-title">
+        Recognized Food
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Restaurant</span>
+        <span id="aiRestaurant">-</span>
+    </div>
+
+    <div class="row">
+        <span>Food Name</span>
+        <span id="aiFood">-</span>
+    </div>
+
+    <div class="row">
+        <span>Description</span>
+        <span id="aiDescription">-</span>
+    </div>
+
+</div>
+
+    <div class="card-title">
+        Nutrition Analysis
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Calories</span>
+        <span id="aiCalories">0</span>
+    </div>
+
+    <div class="row">
+        <span>Protein</span>
+        <span id="aiProtein">0g</span>
+    </div>
+
+    <div class="row">
+        <span>Carbs</span>
+        <span id="aiCarbs">0g</span>
+    </div>
+
+    <div class="row">
+        <span>Fat</span>
+        <span id="aiFat">0g</span>
+    </div>
+
+    <div class="row">
+        <span>Sugar</span>
+        <span id="aiSugar">0g</span>
+    </div>
+
+</div>
+
+<button
+    id="saveBtn"
+    class="save-btn"
+    onclick="saveFood()"
+    disabled>
+    ✅ Save Entry
+</button>
+
+        <button class="back-btn"
+                onclick="window.location.href='../index.html'">
+            🏠 Return Home
+        </button>
+
+        <div id="saveMessage" class="preview"></div>
+
+    </div>
+
+</div>
+
+<div id="navigation"></div>
+
+<script>
+
+document.getElementById("navigation").innerHTML =
+    buildNavigation("add");
+
+let nutritionData = {
+    restaurant: "",
+    food: "",
+    description: "",
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    sugar: 0
+};
+
+async function saveFoodToGoogle(entry){
+
+    try{
+
+        const response = await fetch(
+    API,
+            {
+                method: "POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify(entry)
+            }
+        );
+
+        return await response.json();
+
+    }catch(error){
+
+        console.error(
+            "Google Sheet Sync Failed",
+            error
+        );
+
+        return null;
+    }
+}
+
+async function analyzeFood() {
+
+    console.log("Analyze Started");
+
+    const food =
+        document.getElementById("foodName").value.trim();
+
+    const quantity =
+        Number(document.getElementById("quantity").value) || 1;
+
+    if (food === "") {
+        alert("Enter a food name first.");
+        return;
+    }
+
+const foodMaster = await getFoodMaster();
+
+const match = foodMaster.find(item =>
+    item.Food &&
+    item.Food.toLowerCase() === food.toLowerCase()
+);
+
+if (match) {
+
+    nutritionData = {
+        restaurant: match.Restaurant,
+        food: match.Food,
+        description: match.Description,
+        calories: Number(match.Calories) * quantity,
+        protein: Number(match.Protein) * quantity,
+        carbs: Number(match.Carbs) * quantity,
+        fat: Number(match.Fat) * quantity,
+        sugar: Number(match.Sugar) * quantity
+    };
+
+    document.getElementById("aiRestaurant").innerHTML =
+        nutritionData.restaurant;
+
+    document.getElementById("aiFood").innerHTML =
+        nutritionData.food;
+
+    document.getElementById("aiDescription").innerHTML =
+        nutritionData.description;
+
+    document.getElementById("aiCalories").innerHTML =
+        nutritionData.calories;
+
+    document.getElementById("aiProtein").innerHTML =
+        nutritionData.protein + "g";
+
+    document.getElementById("aiCarbs").innerHTML =
+        nutritionData.carbs + "g";
+
+    document.getElementById("aiFat").innerHTML =
+        nutritionData.fat + "g";
+
+    document.getElementById("aiSugar").innerHTML =
+        nutritionData.sugar + "g";
+
+    document.getElementById("saveBtn").disabled = false;
+
+    console.log("FoodMaster Match Found");
+
+    return;
+}
+
+try {
+
+        const response = await fetch(
+            NUTRITION_API,
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    food: food,
+                    quantity: quantity
+                })
+            }
+        );
+
+        console.log("Response Received");
+
+        const responseText = await response.text();
+
+        console.log("RAW RESPONSE");
+        console.log(responseText);
+
+        const nutrition = JSON.parse(responseText);
+
+        if (nutrition.success === false) {
+            throw new Error(nutrition.error);
+        }
+
+nutritionData = {
+
+    restaurant:
+        nutrition.restaurant || "",
+    food:
+        nutrition.food || "",
+    description:
+        nutrition.description || "",
+    calories:
+        Number(nutrition.calories) || 0,
+    protein:
+        Number(nutrition.protein) || 0,
+    carbs:
+        Number(nutrition.carbs) || 0,
+    fat:
+        Number(nutrition.fat) || 0,
+    sugar:
+        Number(nutrition.sugar) || 0
+};
+
+document.getElementById("aiRestaurant").innerHTML =
+    nutritionData.restaurant;
+
+document.getElementById("aiFood").innerHTML =
+    nutritionData.food;
+
+document.getElementById("aiDescription").innerHTML =
+    nutritionData.description;
+
+        document.getElementById("aiCalories").innerHTML =
+            nutritionData.calories;
+
+        document.getElementById("aiProtein").innerHTML =
+            nutritionData.protein + "g";
+
+        document.getElementById("aiCarbs").innerHTML =
+            nutritionData.carbs + "g";
+
+        document.getElementById("aiFat").innerHTML =
+            nutritionData.fat + "g";
+
+        document.getElementById("aiSugar").innerHTML =
+            nutritionData.sugar + "g";
+
+        console.log("Nutrition Analysis Complete", nutritionData);
+
+	document.getElementById("saveBtn").disabled = false;
+
+    } catch (error) {
+
+        console.error("Nutrition Analysis Failed:", error);
+
+        alert(
+            "Nutrition analysis failed. Please try again."
+        );
+    }
+}
+
+function saveFood() {
+
+    const foodName =
+        document.getElementById("foodName").value.trim();
+
+    const quantity =
+        document.getElementById("quantity").value;
+
+    const mealType =
+        document.getElementById("mealType").value;
+
+    const notes =
+        document.getElementById("notes").value.trim();
+
+    if(foodName === "")
+    {
+        alert("Please enter a food name.");
+        return;
+    }
+
+const entry = {
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+    meal: mealType,
+    restaurant: nutritionData.restaurant,
+    food: nutritionData.food,
+    description: nutritionData.description,
+    quantity: quantity,
+    calories: nutritionData.calories,
+    protein: nutritionData.protein,
+    carbs: nutritionData.carbs,
+    fat: nutritionData.fat,
+    sugar: nutritionData.sugar,
+    notes: notes
+};
+
+    let entries =
+        JSON.parse(localStorage.getItem("foodEntries")) || [];
+
+    entries.push(entry);
+
+    localStorage.setItem(
+        "foodEntries",
+        JSON.stringify(entries)
+    );
+
+saveFoodToGoogle(entry);
+
+    document.getElementById("saveMessage").innerHTML =
+        "✅ Entry Saved Successfully";
+
+    document.getElementById("saveBtn").disabled = true;
+
+    document.getElementById("foodName").value = "";
+
+    document.getElementById("quantity").value = "1";
+
+    document.getElementById("notes").value = "";
+
+nutritionData = {
+    restaurant: "",
+    food: "",
+    description: "",
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    sugar: 0
+};
+
+document.getElementById("aiCalories").innerHTML = "0";
+document.getElementById("aiProtein").innerHTML = "0g";
+document.getElementById("aiCarbs").innerHTML = "0g";
+document.getElementById("aiFat").innerHTML = "0g";
+document.getElementById("aiSugar").innerHTML = "0g";
+document.getElementById("aiRestaurant").innerHTML = "-";
+document.getElementById("aiFood").innerHTML = "-";
+document.getElementById("aiDescription").innerHTML = "-";
+}
+
+</script>
+
+</body>
+
+</html>

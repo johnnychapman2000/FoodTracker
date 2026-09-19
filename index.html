@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nutrition Tracker</title>
+
+<script src="JS/navigation.js?v=1"></script>
+<link rel="stylesheet" href="CSS/navigation.css?v=1">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#061326;
+    color:white;
+    font-family:Arial,sans-serif;
+    padding:15px;
+    padding-bottom:100px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.header h1{
+    font-size:32px;
+}
+
+.header p{
+    color:#bbb;
+    margin-top:5px;
+}
+
+.card{
+    background:#0d1b35;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+
+.card-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.line{
+    width:80px;
+    height:4px;
+    background:#ff5b67;
+    margin:10px auto 20px auto;
+    border-radius:10px;
+}
+
+.big-number{
+    text-align:center;
+    font-size:42px;
+    font-weight:bold;
+}
+
+.sub-text{
+    text-align:center;
+    color:#bbb;
+    margin-top:8px;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+    font-size:18px;
+}
+
+.green{
+    color:#46d369;
+}
+
+.red{
+    color:#ff5b67;
+}
+
+.progress-container{
+    height:20px;
+    background:#1b2e55;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:15px;
+}
+
+.progress-bar{
+    height:100%;
+    width:72%;
+    background:#46d369;
+}
+
+.add-food-btn{
+    width:100%;
+    border:none;
+    padding:18px;
+    border-radius:15px;
+    background:#ff5b67;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#08192f;
+    display:flex;
+    justify-content:space-around;
+    padding:15px;
+}
+
+.bottom-nav a{
+    color:white;
+    text-decoration:none;
+    text-align:center;
+    font-size:14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+    <h1>🥗 Nutrition Tracker</h1>
+    <p>Track Calories. Build Better Habits.</p>
+</div>
+
+<div class="card">
+    <div class="card-title">
+        🔥 Calories Remaining
+    </div>
+
+    <div class="line"></div>
+
+    <div class="big-number" id="caloriesRemaining">
+        2700
+    </div>
+
+    <div class="sub-text" id="caloriesProgress">
+        0 / 2700 Consumed
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="calorieBar"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">⚖️ Weight Tracker</div>
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Current Weight</span>
+        <span>275 lbs</span>
+    </div>
+
+    <div class="row">
+        <span>This Month</span>
+        <span class="green">-2.5 lbs</span>
+    </div>
+
+    <div class="row">
+        <span>Projected</span>
+        <span class="green">-5.0 lbs</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">🥤 Shake-Free Streak</div>
+    <div class="line"></div>
+
+    <div class="big-number green">8</div>
+
+    <div class="sub-text">
+        Days Without A Shake
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">📅 Monthly Progress</div>
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Current Calories</span>
+        <span>48,250</span>
+    </div>
+
+    <div class="row">
+        <span>Last Month</span>
+        <span>61,900</span>
+    </div>
+
+    <div class="row">
+        <span>Difference</span>
+        <span class="green">-13,650</span>
+    </div>
+</div>
+
+<div class="card">
+	<button class="add-food-btn" onclick="window.location.href='HTML/FoodEntry.html'">
+    		➕ Add Food Entry
+	</button>
+</div>
+
+<div class="card">
+    <div class="card-title">🍔 Today's Food Log</div>
+    <div class="line"></div>
+
+    <div id="todayFoodLog">
+        No food logged today.
+    </div>
+</div>
+</div>
+
+<div id="navigation"></div>
+
+<script>
+
+const DAILY_GOAL = 2700;
+
+const entries =
+    JSON.parse(localStorage.getItem("foodEntries")) || [];
+
+const today =
+    new Date().toLocaleDateString();
+
+const todayCalories =
+    entries
+        .filter(entry => entry.date === today)
+        .reduce((total, entry) =>
+            total + Number(entry.calories || 0), 0);
+
+const remaining =
+    Math.max(0, DAILY_GOAL - todayCalories);
+
+document.getElementById("caloriesRemaining").innerHTML =
+    remaining;
+
+document.getElementById("caloriesProgress").innerHTML =
+    `${todayCalories} / ${DAILY_GOAL} Consumed`;
+
+const percent =
+    Math.min((todayCalories / DAILY_GOAL) * 100, 100);
+
+document.getElementById("calorieBar").style.width =
+    percent + "%";
+
+const todayEntries =
+    entries.filter(entry => entry.date === today);
+
+const foodLog =
+    document.getElementById("todayFoodLog");
+
+if (todayEntries.length > 0) {
+
+    foodLog.innerHTML =
+        todayEntries
+            .map(entry => `
+                <div class="row">
+                    <span>${entry.food}</span>
+                    <span>${entry.calories} cal</span>
+                </div>
+            `)
+            .join("");
+}
+
+document.getElementById("navigation").innerHTML =
+    buildNavigation("home");
+</script>
+
+
+</body>
+</html>

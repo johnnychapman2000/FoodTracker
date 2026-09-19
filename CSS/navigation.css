@@ -1,0 +1,41 @@
+.navwrap{
+    position:fixed;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    max-width:700px;
+}
+
+.nav{
+    background:#08192f;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    padding:10px 0;
+    border-radius:20px 20px 0 0;
+}
+
+.nav a {
+    color: #ffffff;
+    text-decoration: none;
+    text-align: center;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.nav a:hover {
+    opacity: 1;
+}
+
+.nav a.active {
+    color: #ff5f6d;
+    opacity: 1;
+    font-weight: bold;
+}
+
+
+body {
+    padding-bottom: 80px;
+}
