@@ -6,10 +6,10 @@
 
 <title>Food Entry</title>
 
-<script src="../JS/API.js?v=2"></script>
-<script src="../JS/NutritionAPI.js?v=4"></script>
-<script src="../JS/navigation.js?v=2"></script>
-<script src="../JS/FoodMasterAPI.js?v=3"></script>
+<script src="../JS/API.js?v=3"></script>
+<script src="../JS/NutritionAPI.js?v=6"></script>
+<script src="../JS/navigation.js?v=4"></script>
+<script src="../JS/FoodMasterAPI.js?v=5"></script>
 <link rel="stylesheet" href="../CSS/navigation.css?v=1">
 
 <style>
@@ -323,9 +323,6 @@ async function saveFoodToGoogle(entry){
             API,
             {
                 method: "POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
                 body: JSON.stringify(entry)
             }
         );
