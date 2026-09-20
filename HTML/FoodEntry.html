@@ -10,7 +10,7 @@
 <script src="../JS/NutritionAPI.js?v=6"></script>
 <script src="../JS/navigation.js?v=4"></script>
 <script src="../JS/FoodMasterAPI.js?v=5"></script>
-<script src="../JS/FoodEntry.js?v=1"></script>
+<script src="../JS/FoodEntry.js?v=2"></script>
 <link rel="stylesheet" href="../CSS/navigation.css?v=1">
 
 <style>
@@ -161,6 +161,24 @@ textarea{
     font-size:14px;
 }
 
+#foodSuggestions{
+    background:#102447;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:-10px;
+    margin-bottom:15px;
+}
+
+.suggestion-item{
+    padding:12px;
+    cursor:pointer;
+    border-bottom:1px solid #1a3566;
+}
+
+.suggestion-item:hover{
+    background:#1a3566;
+}
+
 </style>
 </head>
 
@@ -187,11 +205,14 @@ textarea{
     🤖 Analyze Food
 </button>
 
-        <input
-            type="text"
-            id="foodName"
-            placeholder="Example: McChicken"
-        >
+<input
+    type="text"
+    id="foodName"
+    placeholder="Example: McChicken"
+>
+
+<div id="foodSuggestions"></div>
+
 
         <label>Quantity</label>
 
