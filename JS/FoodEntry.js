@@ -280,4 +280,152 @@ window.onload = function () {
     document.getElementById("navigation").innerHTML =
         buildNavigation("add");
 
+    document
+        .getElementById("foodName")
+        .addEventListener(
+            "input",
+            searchFoodSuggestions
+        );
 };
+
+async function searchFoodSuggestions() {
+
+    const searchText =
+        document.getElementById("foodName")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const suggestions =
+        document.getElementById(
+            "foodSuggestions"
+        );
+
+   // suggestions.innerHTML = "";
+
+    if (searchText.length < 2) {
+        return;
+    }
+
+    const foodMaster =
+        await getFoodMaster();
+
+    const matches =
+        foodMaster.filter(item =>
+            item.Food &&
+            item.Food
+                .toLowerCase()
+                .includes(searchText)
+        );
+
+console.log(
+    matches.map(x => x.Food)
+);
+
+suggestions.innerHTML = "";
+    matches
+        .slice(0, 10)
+        .forEach(item => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "suggestion-item";
+
+            div.innerHTML =
+                item.Food;
+
+            div.onclick = function () {
+
+                selectFood(item);
+
+            };
+
+            suggestions.appendChild(div);
+
+        });
+}
+function selectFood(item) {
+
+    document.getElementById(
+        "foodName"
+    ).value =
+        item.Food;
+
+    document.getElementById(
+        "foodSuggestions"
+    ).innerHTML = "";
+
+    nutritionData = {
+
+        restaurant:
+            item.Restaurant,
+
+        food:
+            item.Food,
+
+        description:
+            item.Description,
+
+        calories:
+            Number(item.Calories),
+
+        protein:
+            Number(item.Protein),
+
+        carbs:
+            Number(item.Carbs),
+
+        fat:
+            Number(item.Fat),
+
+        sugar:
+            Number(item.Sugar)
+
+    };
+
+    document.getElementById(
+        "aiRestaurant"
+    ).innerHTML =
+        nutritionData.restaurant;
+
+    document.getElementById(
+        "aiFood"
+    ).innerHTML =
+        nutritionData.food;
+
+    document.getElementById(
+        "aiDescription"
+    ).innerHTML =
+        nutritionData.description;
+
+    document.getElementById(
+        "aiCalories"
+    ).innerHTML =
+        nutritionData.calories;
+
+    document.getElementById(
+        "aiProtein"
+    ).innerHTML =
+        nutritionData.protein + "g";
+
+    document.getElementById(
+        "aiCarbs"
+    ).innerHTML =
+        nutritionData.carbs + "g";
+
+    document.getElementById(
+        "aiFat"
+    ).innerHTML =
+        nutritionData.fat + "g";
+
+    document.getElementById(
+        "aiSugar"
+    ).innerHTML =
+        nutritionData.sugar + "g";
+
+    document.getElementById(
+        "saveBtn"
+    ).disabled = false;
+}
