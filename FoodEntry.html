@@ -510,7 +510,7 @@ document.getElementById("aiDescription").innerHTML =
     }
 }
 
-function saveFood() {
+async function saveFood() {
 
     const foodName =
         document.getElementById("foodName").value.trim();
@@ -546,37 +546,24 @@ const entry = {
     notes: notes
 };
 
-    let entries =
-        JSON.parse(localStorage.getItem("foodEntries")) || [];
+const result =
+    await saveFoodToGoogle(entry);
 
-    entries.push(entry);
-
-    localStorage.setItem(
-        "foodEntries",
-        JSON.stringify(entries)
-    );
-
-let pendingSync =
-    JSON.parse(
-        localStorage.getItem("pendingSync")
-    ) || [];
-
-pendingSync.push(entry);
-
-localStorage.setItem(
-    "pendingSync",
-    JSON.stringify(pendingSync)
-);
-
-console.log(
-    "Pending Sync Queue Updated",
-    pendingSync.length
-);
-
-saveFoodToGoogle(entry);
+if (
+    result &&
+    result.success === true
+) {
 
     document.getElementById("saveMessage").innerHTML =
         "✅ Entry Saved Successfully";
+
+} else {
+
+    document.getElementById("saveMessage").innerHTML =
+        "❌ Save Failed";
+
+    return;
+}
 
     document.getElementById("saveBtn").disabled = true;
 
@@ -596,7 +583,6 @@ nutritionData = {
     fat: 0,
     sugar: 0
 };
-
 document.getElementById("aiCalories").innerHTML = "0";
 document.getElementById("aiProtein").innerHTML = "0g";
 document.getElementById("aiCarbs").innerHTML = "0g";
