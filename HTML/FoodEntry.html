@@ -6,11 +6,10 @@
 
 <title>Food Entry</title>
 
-<script src="../JS/API.js?v=2"></script>
-<script src="../JS/NutritionAPI.js?v=4"></script>
-<script src="../JS/navigation.js?v=2"></script>
-<script src="../JS/FoodMasterAPI.js?v=3"></script>
-<script src="../JS/FoodMasterCheck.js?v=4"></script>
+<script src="../JS/API.js?v=3"></script>
+<script src="../JS/NutritionAPI.js?v=5"></script>
+<script src="../JS/navigation.js?v=3"></script>
+<script src="../JS/FoodMasterAPI.js?v=4"></script>
 <link rel="stylesheet" href="../CSS/navigation.css?v=1">
 
 <style>
@@ -168,14 +167,6 @@ textarea{
 
 <div class="container">
 
-<button onclick="migrateToPendingSync()">
-    Migrate To Pending Sync
-</button>
-
-<button onclick="syncPendingEntries()">
-    🔄 Sync Pending Entries
-</button>
-
     <div class="header">
         <h1>🍔 Food Entry</h1>
         <p>Log Today's Food Intake</p>
@@ -329,7 +320,7 @@ async function saveFoodToGoogle(entry){
     try{
 
         const response = await fetch(
-    API,
+            API,
             {
                 method: "POST",
                 headers:{
@@ -339,12 +330,19 @@ async function saveFoodToGoogle(entry){
             }
         );
 
-        return await response.json();
+        const result = await response.json();
 
-    }catch(error){
+        alert(
+            "Save Result: " +
+            JSON.stringify(result)
+        );
 
-        console.error(
-            "Google Sheet Sync Failed",
+        return result;
+
+    } catch(error){
+
+        alert(
+            "Sync Failed: " +
             error
         );
 
@@ -503,7 +501,7 @@ document.getElementById("aiDescription").innerHTML =
     }
 }
 
-function saveFood() {
+async function saveFood() {
 
     const foodName =
         document.getElementById("foodName").value.trim();
@@ -539,37 +537,24 @@ const entry = {
     notes: notes
 };
 
-    let entries =
-        JSON.parse(localStorage.getItem("foodEntries")) || [];
+const result =
+    await saveFoodToGoogle(entry);
 
-    entries.push(entry);
-
-    localStorage.setItem(
-        "foodEntries",
-        JSON.stringify(entries)
-    );
-
-let pendingSync =
-    JSON.parse(
-        localStorage.getItem("pendingSync")
-    ) || [];
-
-pendingSync.push(entry);
-
-localStorage.setItem(
-    "pendingSync",
-    JSON.stringify(pendingSync)
-);
-
-console.log(
-    "Pending Sync Queue Updated",
-    pendingSync.length
-);
-
-saveFoodToGoogle(entry);
+if (
+    result &&
+    result.success === true
+) {
 
     document.getElementById("saveMessage").innerHTML =
         "✅ Entry Saved Successfully";
+
+} else {
+
+    document.getElementById("saveMessage").innerHTML =
+        "❌ Save Failed";
+
+    return;
+}
 
     document.getElementById("saveBtn").disabled = true;
 
@@ -589,7 +574,6 @@ nutritionData = {
     fat: 0,
     sugar: 0
 };
-
 document.getElementById("aiCalories").innerHTML = "0";
 document.getElementById("aiProtein").innerHTML = "0g";
 document.getElementById("aiCarbs").innerHTML = "0g";
