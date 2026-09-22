@@ -6,8 +6,9 @@
 
 <title>Nutrition Tracker</title>
 
-<script src="JS/navigation.js?v=1"></script>
-<link rel="stylesheet" href="CSS/navigation.css?v=1">
+<script src="JS/navigation.js?v=3"></script>
+<script src="JS/API.js?v=2"></script>
+<link rel="stylesheet" href="CSS/navigation.css?v=2">
 
 <style>
 
@@ -171,6 +172,105 @@ body{
 </div>
 
 <div class="card">
+    <div class="card-title">📊 Today's Status</div>
+    <div class="line"></div>
+
+    <div class="big-number" id="goalStatus">
+        -
+    </div>
+
+    <div class="sub-text" id="goalStatusDetail">
+        -
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">⚠️ Today's Biggest Impact</div>
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Calories</span>
+        <span id="highestCalories">-</span>
+    </div>
+
+    <div class="row">
+        <span>Sugar</span>
+        <span id="highestSugar">-</span>
+    </div>
+
+    <div class="row">
+        <span>Fat</span>
+        <span id="highestFat">-</span>
+    </div>
+
+    <div class="row">
+        <span>Protein</span>
+        <span id="highestProtein">-</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">🤖 AI Nutrition Coach</div>
+    <div class="line"></div>
+
+    <div id="aiCoachMessage">
+        Coming Soon
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">📅 Monthly Progress</div>
+    <div class="line"></div>
+
+    <div class="row">
+        <span>Current Month</span>
+        <span id="monthCalories">0</span>
+    </div>
+
+    <div class="row">
+        <span>Days Logged</span>
+        <span id="daysLogged">0</span>
+    </div>
+
+<div class="row">
+    <span>Days Missing</span>
+    <span id="daysMissing">0</span>
+</div>
+
+    <div class="row">
+        <span>Daily Avg</span>
+        <span id="dailyAverage">0</span>
+    </div>
+
+<div class="row">
+    <span>Last Month Avg</span>
+    <span id="lastMonthAverage">2000</span>
+</div>
+
+
+    <div class="row">
+        <span>Projected</span>
+        <span id="projectedCalories">0</span>
+    </div>
+
+    <div class="row">
+        <span>Last Month</span>
+        <span id="lastMonthCalories">61900</span>
+    </div>
+
+    <div class="row">
+	<span>Month Result</span>
+	<span id="monthDifference">-</span>
+    </div>
+
+<div class="row">
+    <span>Avg Result</span>
+    <span id="averageDifference">-</span>
+</div>
+
+</div>
+
+<div class="card">
     <div class="card-title">⚖️ Weight Tracker</div>
     <div class="line"></div>
 
@@ -201,25 +301,6 @@ body{
     </div>
 </div>
 
-<div class="card">
-    <div class="card-title">📅 Monthly Progress</div>
-    <div class="line"></div>
-
-    <div class="row">
-        <span>Current Calories</span>
-        <span>48,250</span>
-    </div>
-
-    <div class="row">
-        <span>Last Month</span>
-        <span>61,900</span>
-    </div>
-
-    <div class="row">
-        <span>Difference</span>
-        <span class="green">-13,650</span>
-    </div>
-</div>
 
 <div class="card">
 	<button class="add-food-btn" onclick="window.location.href='HTML/FoodEntry.html'">
@@ -243,51 +324,345 @@ body{
 
 const DAILY_GOAL = 2700;
 
-const entries =
-    JSON.parse(localStorage.getItem("foodEntries")) || [];
+async function loadHome() {
+
+    const entries =
+        await getFoodLog();
+
+
+const nowEastern =
+    new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
 
 const today =
-    new Date().toLocaleDateString();
-
-const todayCalories =
-    entries
-        .filter(entry => entry.date === today)
-        .reduce((total, entry) =>
-            total + Number(entry.calories || 0), 0);
-
-const remaining =
-    Math.max(0, DAILY_GOAL - todayCalories);
-
-document.getElementById("caloriesRemaining").innerHTML =
-    remaining;
-
-document.getElementById("caloriesProgress").innerHTML =
-    `${todayCalories} / ${DAILY_GOAL} Consumed`;
-
-const percent =
-    Math.min((todayCalories / DAILY_GOAL) * 100, 100);
-
-document.getElementById("calorieBar").style.width =
-    percent + "%";
+    nowEastern
+        .getFullYear()
+    + "-"
+    + String(
+        nowEastern.getMonth() + 1
+      ).padStart(2, "0")
+    + "-"
+    + String(
+        nowEastern.getDate()
+      ).padStart(2, "0");
 
 const todayEntries =
-    entries.filter(entry => entry.date === today);
+    entries.filter(
+        x =>
+            x.Date &&
+            String(x.Date)
+                .substring(0,10) === today
+    );
 
-const foodLog =
-    document.getElementById("todayFoodLog");
+
+    const todayCalories =
+        todayEntries.reduce(
+            (total, x) =>
+                total +
+                Number(x.Calories || 0),
+            0
+        );
+
+    const remaining =
+        Math.max(
+            0,
+            DAILY_GOAL - todayCalories
+        );
+
+    document.getElementById(
+        "caloriesRemaining"
+    ).innerHTML =
+        remaining;
+
+    document.getElementById(
+        "caloriesProgress"
+    ).innerHTML =
+        `${todayCalories} / ${DAILY_GOAL} Consumed`;
+
+    const percent =
+        Math.min(
+            (todayCalories / DAILY_GOAL) * 100,
+            100
+        );
+
+    document.getElementById(
+        "calorieBar"
+    ).style.width =
+        percent + "%";
+
+    document.getElementById(
+        "todayFoodLog"
+    ).innerHTML =
+        todayEntries.length > 0
+            ? todayEntries.map(x => `
+                <div class="row">
+                    <span>${x.Food}</span>
+                    <span>${x.Calories} cal</span>
+                </div>
+            `).join("")
+            : "No food logged today.";
 
 if (todayEntries.length > 0) {
 
-    foodLog.innerHTML =
-        todayEntries
-            .map(entry => `
-                <div class="row">
-                    <span>${entry.food}</span>
-                    <span>${entry.calories} cal</span>
-                </div>
-            `)
-            .join("");
+    const highestCalories =
+        todayEntries.reduce(
+            (max, item) =>
+                Number(item.Calories || 0) >
+                Number(max.Calories || 0)
+                    ? item
+                    : max
+        );
+
+    const highestSugar =
+        todayEntries.reduce(
+            (max, item) =>
+                Number(item.Sugar || 0) >
+                Number(max.Sugar || 0)
+                    ? item
+                    : max
+        );
+
+    const highestFat =
+        todayEntries.reduce(
+            (max, item) =>
+                Number(item.Fat || 0) >
+                Number(max.Fat || 0)
+                    ? item
+                    : max
+        );
+
+    const highestProtein =
+        todayEntries.reduce(
+            (max, item) =>
+                Number(item.Protein || 0) >
+                Number(max.Protein || 0)
+                    ? item
+                    : max
+        );
+
+    document.getElementById(
+        "highestCalories"
+    ).innerHTML =
+        highestCalories.Food;
+
+    document.getElementById(
+        "highestSugar"
+    ).innerHTML =
+        highestSugar.Food;
+
+    document.getElementById(
+        "highestFat"
+    ).innerHTML =
+        highestFat.Food;
+
+    document.getElementById(
+        "highestProtein"
+    ).innerHTML =
+        highestProtein.Food;
 }
+
+if (todayCalories <= DAILY_GOAL) {
+
+    document.getElementById(
+        "goalStatus"
+    ).innerHTML =
+        "✅ UNDER";
+
+    document.getElementById(
+        "goalStatusDetail"
+    ).innerHTML =
+        `${DAILY_GOAL - todayCalories} Calories Remaining`;
+
+} else {
+
+    document.getElementById(
+        "goalStatus"
+    ).innerHTML =
+        "❌ OVER";
+
+    document.getElementById(
+        "goalStatusDetail"
+    ).innerHTML =
+        `${todayCalories - DAILY_GOAL} Calories Over`;
+
+}
+
+    const now = new Date();
+
+    const currentMonth =
+        now.getMonth();
+
+    const currentYear =
+        now.getFullYear();
+
+    const monthEntries =
+        entries.filter(x => {
+
+            const entryDate =
+                new Date(x.Date);
+
+            return (
+                entryDate.getMonth() === currentMonth &&
+                entryDate.getFullYear() === currentYear
+            );
+
+        });
+
+    const monthCalories =
+        monthEntries.reduce(
+            (total, x) =>
+                total +
+                Number(x.Calories || 0),
+            0
+        );
+
+    const uniqueDays =
+        new Set(
+            monthEntries.map(
+                x => String(x.Date).substring(0,10)
+            )
+        );
+
+const daysLogged =
+    uniqueDays.size;
+
+const currentDay =
+    now.getDate();
+
+const daysMissing =
+    currentDay - daysLogged;
+
+    const dailyAverage =
+        daysLogged > 0
+            ? Math.round(
+                monthCalories / daysLogged
+              )
+            : 0;
+
+    const daysInMonth =
+        new Date(
+            currentYear,
+            currentMonth + 1,
+            0
+        ).getDate();
+
+    const projectedCalories =
+        dailyAverage *
+        daysInMonth;
+
+    const lastMonthCalories =
+        61900;
+
+const lastMonthAverage =
+    2000;
+
+    const difference =
+        projectedCalories -
+        lastMonthCalories;
+
+const averageDifference =
+    dailyAverage -
+    lastMonthAverage;
+
+    document.getElementById(
+        "monthCalories"
+    ).innerHTML =
+        monthCalories.toLocaleString();
+
+    document.getElementById(
+        "daysLogged"
+    ).innerHTML =
+        daysLogged;
+
+document.getElementById(
+    "daysMissing"
+).innerHTML =
+    daysMissing;
+
+    document.getElementById(
+        "dailyAverage"
+    ).innerHTML =
+        dailyAverage.toLocaleString();
+
+document.getElementById(
+    "lastMonthAverage"
+).innerHTML =
+    lastMonthAverage.toLocaleString();
+
+    document.getElementById(
+        "projectedCalories"
+    ).innerHTML =
+        projectedCalories.toLocaleString();
+
+    document.getElementById(
+        "lastMonthCalories"
+    ).innerHTML =
+        lastMonthCalories.toLocaleString();
+
+    const result =
+        document.getElementById(
+            "monthDifference"
+        );
+
+    if (difference <= 0) {
+
+        result.className =
+            "green";
+
+        result.innerHTML =
+            "✅ " +
+            Math.abs(difference)
+                .toLocaleString() +
+            " Lower";
+
+    } else {
+
+        result.className =
+            "red";
+
+        result.innerHTML =
+            "❌ " +
+            difference
+                .toLocaleString() +
+            " Higher";
+    }
+
+const avgResult =
+    document.getElementById(
+        "averageDifference"
+    );
+
+if (averageDifference <= 0) {
+
+    avgResult.className =
+        "green";
+
+    avgResult.innerHTML =
+        "✅ " +
+        Math.abs(averageDifference)
+            .toLocaleString() +
+        " Lower";
+
+} else {
+
+    avgResult.className =
+        "red";
+
+    avgResult.innerHTML =
+        "❌ " +
+        averageDifference
+            .toLocaleString() +
+        " Higher";
+}
+}
+
+loadHome().catch(console.error);
 
 document.getElementById("navigation").innerHTML =
     buildNavigation("home");
