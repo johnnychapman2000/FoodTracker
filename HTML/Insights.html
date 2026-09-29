@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Insights</title>
+
+<script src="../JS/navigation.js?v=3"></script>
+<script src="../JS/API.js?v=2"></script>
+<link rel="stylesheet" href="../CSS/navigation.css?v=2">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#061326;
+    color:white;
+    font-family:Arial,sans-serif;
+    padding:15px;
+    padding-bottom:100px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#0d1b35;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+
+.card-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.line{
+    width:80px;
+    height:4px;
+    background:#ff5b67;
+    margin:10px auto 20px auto;
+    border-radius:10px;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.green{
+    color:#46d369;
+}
+
+.red{
+    color:#ff5b67;
+}
+
+.big-number{
+    text-align:center;
+    font-size:36px;
+    font-weight:bold;
+}
+
+.sub-text{
+    text-align:center;
+    color:#bbb;
+    margin-top:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+    <h1>📊 Insights</h1>
+</div>
+
+<div class="card">
+
+    <div class="card-title">
+        🏆 Worst Single Food
+    </div>
+
+    <div class="line"></div>
+
+    <div class="big-number" id="worstFood">
+        -
+    </div>
+
+    <div class="sub-text" id="worstFoodDetails">
+        -
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-title">
+        🔥 Foods Hurting Progress
+    </div>
+
+    <div class="line"></div>
+
+    <div id="topFoods">
+        Loading...
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-title">
+        🍭 Highest Total Sugar This Month
+    </div>
+
+    <div class="line"></div>
+
+    <div id="topSugarFoods">
+        Loading...
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-title">
+        🚫 Ban Candidate This Month
+    </div>
+
+    <div class="line"></div>
+
+    <div class="big-number red" id="banFood">
+        -
+    </div>
+
+    <div class="sub-text" id="banFoodReason">
+        -
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-title">
+        ✅ Best Food Choice This Month
+    </div>
+
+    <div class="line"></div>
+
+    <div class="big-number green" id="bestFood">
+        -
+    </div>
+
+    <div class="sub-text" id="bestFoodDetails">
+        -
+    </div>
+
+</div>
+
+</div>
+
+<div id="navigation"></div>
+
+<script>
+
+function getDamageScore(item){
+
+    const calories =
+        Number(item.Calories || 0);
+
+    const sugar =
+        Number(item.Sugar || 0);
+
+    const fat =
+        Number(item.Fat || 0);
+
+    const protein =
+        Number(item.Protein || 0);
+
+    return Math.round(
+        (calories / 25)
+        +
+        (sugar * 2)
+        +
+        fat
+        -
+        protein
+    );
+
+}
+
+function getPrimaryIssue(item){
+
+    const calories =
+        Number(item.Calories || 0);
+
+    const sugar =
+        Number(item.Sugar || 0);
+
+    const fat =
+        Number(item.Fat || 0);
+
+    const protein =
+        Number(item.Protein || 0);
+
+    const sugarImpact =
+        sugar * 2;
+
+    const fatImpact =
+        fat;
+
+    const calorieImpact =
+        calories / 25;
+
+    const maxImpact =
+        Math.max(
+            sugarImpact,
+            fatImpact,
+            calorieImpact
+        );
+
+    if(maxImpact === sugarImpact){
+        return "Extreme Sugar";
+    }
+
+    if(maxImpact === fatImpact){
+        return "High Fat";
+    }
+
+    return "High Calories";
+}
+
+function getBenefitScore(item){
+
+    const protein =
+        Number(item.Protein || 0);
+
+    const sugar =
+        Number(item.Sugar || 0);
+
+    const fat =
+        Number(item.Fat || 0);
+
+    return Math.round(
+        protein
+        -
+        (sugar * 0.5)
+        -
+        (fat * 0.25)
+    );
+}
+
+async function loadInsights(){
+
+    const entries =
+        await getFoodLog();
+
+    if(entries.length === 0){
+        return;
+    }
+
+const worstEntry =
+    entries.reduce(
+        (worst,item)=>
+            getDamageScore(item) >
+            getDamageScore(worst)
+                ? item
+                : worst
+    );
+
+const score =
+    getDamageScore(worstEntry);
+
+document.getElementById(
+    "worstFood"
+).innerHTML =
+    worstEntry.Food;
+
+document.getElementById(
+    "worstFoodDetails"
+).innerHTML =
+`
+Damage Score: ${score}
+<br>
+Calories: ${worstEntry.Calories}
+<br>
+Sugar: ${worstEntry.Sugar}g
+<br>
+Fat: ${worstEntry.Fat}g
+<br>
+Protein: ${worstEntry.Protein}g
+<br>
+Primary Issue:
+${getPrimaryIssue(worstEntry)}
+`;
+
+
+
+    const calorieTotals = {};
+    const sugarTotals = {};
+
+    entries.forEach(entry => {
+
+        const food =
+            entry.Food || "Unknown";
+
+        if(!calorieTotals[food]){
+
+            calorieTotals[food] = {
+                count:0,
+                calories:0
+            };
+
+        }
+
+        calorieTotals[food].count++;
+
+        calorieTotals[food].calories +=
+            Number(entry.Calories || 0);
+
+
+
+        if(!sugarTotals[food]){
+
+            sugarTotals[food] = 0;
+
+        }
+
+        sugarTotals[food] +=
+            Number(entry.Sugar || 0);
+
+    });
+
+
+
+const foodScores = {};
+
+entries.forEach(entry => {
+
+    const food =
+        entry.Food || "Unknown";
+
+    if(!foodScores[food]){
+
+        foodScores[food] = {
+            score:0,
+            calories:0,
+            sugar:0,
+            count:0
+        };
+
+    }
+
+    foodScores[food].score +=
+        getDamageScore(entry);
+
+    foodScores[food].calories +=
+        Number(entry.Calories || 0);
+
+    foodScores[food].sugar +=
+        Number(entry.Sugar || 0);
+
+    foodScores[food].count++;
+
+});
+
+const topDamagingFoods =
+    Object.entries(foodScores)
+        .sort(
+            (a,b)=>
+                b[1].score -
+                a[1].score
+        )
+        .slice(0,5);
+
+document.getElementById(
+    "topFoods"
+).innerHTML =
+    topDamagingFoods.map(
+([food,data],index)=>{
+
+const sampleEntry =
+    entries.find(
+        e => e.Food === food
+    );
+
+return `
+<div style="margin-bottom:18px;">
+
+<div class="row">
+    <span>
+        ${index + 1}. ${food}
+    </span>
+
+    <span>
+        ${data.score}
+    </span>
+</div>
+
+<div class="sub-text">
+
+Damage Score:
+${data.score}
+
+<br>
+
+${data.calories.toLocaleString()} cal
+|
+${Math.round(data.sugar)}g sugar
+
+<br>
+
+Primary Issue:
+${getPrimaryIssue(sampleEntry)}
+
+</div>
+
+</div>
+`;
+}).join("");
+
+
+
+    const topSugarFoods =
+        Object.entries(sugarTotals)
+            .sort(
+                (a,b)=>b[1]-a[1]
+            )
+            .slice(0,5);
+
+    document.getElementById(
+        "topSugarFoods"
+    ).innerHTML =
+        topSugarFoods.map(
+            ([food,sugar],index)=>`
+
+            <div class="row">
+                <span>
+                    ${index + 1}. ${food}
+                </span>
+
+                <span>
+                    ${Math.round(sugar)}g
+                </span>
+            </div>
+
+            `
+        ).join("");
+
+
+
+const worstFood =
+    topDamagingFoods[0];
+
+    document.getElementById(
+        "banFood"
+    ).innerHTML =
+        worstFood[0];
+
+document.getElementById(
+    "banFoodReason"
+).innerHTML =
+`
+Damage Score:
+${Math.round(worstFood[1].score)}
+
+<br>
+
+${worstFood[1].count}
+times consumed
+
+<br>
+
+Potential Savings:
+
+${worstFood[1].calories.toLocaleString()} calories
+
+<br>
+
+${Math.round(worstFood[1].sugar)}g sugar
+`;
+
+const bestEntry =
+    entries.reduce(
+        (best,item)=>
+            getBenefitScore(item) >
+            getBenefitScore(best)
+                ? item
+                : best
+    );
+
+document.getElementById(
+    "bestFood"
+).innerHTML =
+    bestEntry.Food;
+
+document.getElementById(
+    "bestFoodDetails"
+).innerHTML =
+`
+Benefit Score:
+${getBenefitScore(bestEntry)}
+
+<br>
+
+Protein:
+${bestEntry.Protein}g
+
+<br>
+
+Sugar:
+${bestEntry.Sugar}g
+
+<br>
+
+Fat:
+${bestEntry.Fat}g
+`;
+
+}
+
+loadInsights().catch(console.error);
+
+document.getElementById(
+    "navigation"
+).innerHTML =
+    buildNavigation("stats");
+
+</script>
+
+</body>
+</html>
