@@ -310,13 +310,22 @@ async function searchFoodSuggestions() {
     const foodMaster =
         await getFoodMaster();
 
-    const matches =
-        foodMaster.filter(item =>
-            item.Food &&
-            item.Food
-                .toLowerCase()
-                .includes(searchText)
+const terms = searchText
+    .split(" ")
+    .filter(term => term);
+
+const matches =
+    foodMaster.filter(item => {
+
+        const searchable =
+            `${item.Restaurant} ${item.Food}`
+                .toLowerCase();
+
+        return terms.every(term =>
+            searchable.includes(term)
         );
+
+    });
 
 console.log(
     matches.map(x => x.Food)
@@ -330,11 +339,11 @@ suggestions.innerHTML = "";
             const div =
                 document.createElement("div");
 
-            div.className =
-                "suggestion-item";
+div.className =
+    "suggestion-item";
 
-            div.innerHTML =
-                item.Food;
+div.innerHTML =
+    `${item.Restaurant} - ${item.Food}`;
 
             div.onclick = function () {
 
