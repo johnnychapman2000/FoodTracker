@@ -10,7 +10,7 @@
 <script src="../JS/NutritionAPI.js?v=7"></script>
 <script src="../JS/navigation.js?v=5"></script>
 <script src="../JS/FoodMasterAPI.js?v=6"></script>
-<script src="../JS/FoodEntry.js?v=3"></script>
+<script src="../JS/FoodEntry.js?v=8"></script>
 <link rel="stylesheet" href="../CSS/navigation.css?v=1">
 
 <style>
@@ -214,31 +214,46 @@ textarea{
 <div id="foodSuggestions"></div>
 
 
-        <label>Quantity</label>
+<label>Amount Consumed</label>
 
-        <input
-            type="number"
-            id="quantity"
-            value="1"
-            min="1"
-        >
+<div style="display:flex; gap:10px; align-items:center;">
+
+    <input
+        type="number"
+        id="quantity"
+        value="1"
+        min="0"
+        step="0.1"
+        style="
+            width:10%;
+            margin-bottom:15px;
+        "
+    >
+
+    <span
+        id="quantityUnit"
+        style="
+            font-weight:bold;
+            font-size:16px;
+            margin-bottom:15px;
+        "
+    >
+        -
+    </span>
+
+</div>
 
         <label>Meal Type</label>
 
-        <select id="mealType">
-            <option>Breakfast</option>
-            <option>Lunch</option>
-            <option>Dinner</option>
-            <option>Snack</option>
-        </select>
-
-        <label>Notes (Optional)</label>
-
-        <textarea
-            id="notes"
-            rows="3"
-            placeholder="Extra details..."
-        ></textarea>
+<select
+    id="mealType"
+    style="width:20%;"
+>
+    <option>Breakfast</option>
+    <option>Lunch</option>
+    <option>Dinner</option>
+    <option>Snack</option>
+</select>
 
 <div class="card">
 

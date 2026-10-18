@@ -84,6 +84,20 @@ body{
     margin-top:8px;
 }
 
+.food-divider{
+    width:70%;
+    height:1px;
+    background:#2a3b5f;
+    margin:15px auto;
+}
+
+.food-detail{
+    text-align:center;
+    color:#bbb;
+    font-size:15px;
+    line-height:1.6;
+}
+
 </style>
 </head>
 
@@ -272,10 +286,70 @@ function getBenefitScore(item){
 
 async function loadInsights(){
 
-    const entries =
+    const allEntries =
         await getFoodLog();
 
+    const now = new Date();
+
+    const entries =
+        allEntries.filter(entry => {
+
+            if(!entry.Date){
+                return false;
+            }
+
+            const entryDate =
+                new Date(entry.Date);
+
+            return (
+                entryDate.getMonth() === now.getMonth() &&
+                entryDate.getFullYear() === now.getFullYear()
+            );
+
+        });
+
     if(entries.length === 0){
+
+        document.getElementById(
+            "worstFood"
+        ).innerHTML =
+            "No Data";
+
+        document.getElementById(
+            "worstFoodDetails"
+        ).innerHTML =
+            "Add food entries for this month.";
+
+        document.getElementById(
+            "topFoods"
+        ).innerHTML =
+            "No food entries this month.";
+
+        document.getElementById(
+            "topSugarFoods"
+        ).innerHTML =
+            "No food entries this month.";
+
+        document.getElementById(
+            "banFood"
+        ).innerHTML =
+            "-";
+
+        document.getElementById(
+            "banFoodReason"
+        ).innerHTML =
+            "No food entries this month.";
+
+        document.getElementById(
+            "bestFood"
+        ).innerHTML =
+            "-";
+
+        document.getElementById(
+            "bestFoodDetails"
+        ).innerHTML =
+            "No food entries this month.";
+
         return;
     }
 
@@ -362,12 +436,14 @@ entries.forEach(entry => {
 
     if(!foodScores[food]){
 
-        foodScores[food] = {
-            score:0,
-            calories:0,
-            sugar:0,
-            count:0
-        };
+foodScores[food] = {
+    score:0,
+    calories:0,
+    sugar:0,
+    fat:0,
+    protein:0,
+    count:0
+};
 
     }
 
@@ -379,6 +455,12 @@ entries.forEach(entry => {
 
     foodScores[food].sugar +=
         Number(entry.Sugar || 0);
+
+foodScores[food].fat +=
+    Number(entry.Fat || 0);
+
+foodScores[food].protein +=
+    Number(entry.Protein || 0);
 
     foodScores[food].count++;
 
@@ -396,7 +478,7 @@ const topDamagingFoods =
 document.getElementById(
     "topFoods"
 ).innerHTML =
-    topDamagingFoods.map(
+topDamagingFoods.map(
 ([food,data],index)=>{
 
 const sampleEntry =
@@ -405,41 +487,65 @@ const sampleEntry =
     );
 
 return `
-<div style="margin-bottom:18px;">
 
-<div class="row">
-    <span>
-        ${index + 1}. ${food}
-    </span>
+<div style="margin-bottom:15px;">
 
-    <span>
-        ${data.score}
-    </span>
+    <div class="row">
+
+        <span style="font-weight:bold;">
+            ${index + 1}. ${food}
+        </span>
+
+        <span style="font-weight:bold;color:#ff5b67;">
+            ${data.score}
+        </span>
+
+    </div>
+
+    <div
+        style="
+            text-align:center;
+            color:#bbb;
+            font-size:14px;
+            margin-top:6px;
+        "
+    >
+
+        ${data.calories.toLocaleString()} cal
+        •
+        ${Math.round(data.sugar)}g sugar
+
+        <br>
+
+        ${data.count}
+        time${data.count > 1 ? "s" : ""}
+
+        •
+
+        ${getPrimaryIssue(sampleEntry)}
+
+    </div>
+
+    ${
+        index < topDamagingFoods.length - 1
+        ? `
+            <div
+                style="
+                    width:60%;
+                    height:1px;
+                    background:#2a3b5f;
+                    margin:12px auto 0 auto;
+                "
+            ></div>
+          `
+        : ""
+    }
+
 </div>
 
-<div class="sub-text">
-
-Damage Score:
-${data.score}
-
-<br>
-
-${data.calories.toLocaleString()} cal
-|
-${Math.round(data.sugar)}g sugar
-
-<br>
-
-Primary Issue:
-${getPrimaryIssue(sampleEntry)}
-
-</div>
-
-</div>
 `;
+
 }).join("");
-
-
 
     const topSugarFoods =
         Object.entries(sugarTotals)
@@ -477,29 +583,45 @@ const worstFood =
     ).innerHTML =
         worstFood[0];
 
+const banEntry =
+    entries.find(
+        e => e.Food === worstFood[0]
+    );
+
 document.getElementById(
     "banFoodReason"
 ).innerHTML =
 `
-Damage Score:
+Total Damage Score:
 ${Math.round(worstFood[1].score)}
 
-<br>
+<br><br>
 
+Times Consumed:
 ${worstFood[1].count}
-times consumed
+
+<br><br>
+
+Primary Issue:
+
+${getPrimaryIssue(banEntry)}
+
+<br><br>
+
+Potential Savings
 
 <br>
 
-Potential Savings:
-
-${worstFood[1].calories.toLocaleString()} calories
+${worstFood[1].calories.toLocaleString()} Calories
 
 <br>
 
-${Math.round(worstFood[1].sugar)}g sugar
+${Math.round(worstFood[1].sugar)}g Sugar
+
+<br>
+
+${Math.round(worstFood[1].fat)}g Fat
 `;
-
 const bestEntry =
     entries.reduce(
         (best,item)=>
@@ -521,6 +643,11 @@ document.getElementById(
 Benefit Score:
 ${getBenefitScore(bestEntry)}
 
+<br><br>
+
+Calories:
+${bestEntry.Calories}
+
 <br>
 
 Protein:
@@ -535,6 +662,12 @@ ${bestEntry.Sugar}g
 
 Fat:
 ${bestEntry.Fat}g
+
+<br><br>
+
+Primary Strength:
+
+High Protein
 `;
 
 }

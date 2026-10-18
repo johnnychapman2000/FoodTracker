@@ -2,12 +2,16 @@ let nutritionData = {
     restaurant: "",
     food: "",
     description: "",
+    unitType: "",
+    baseAmount: 1,
     calories: 0,
     protein: 0,
     carbs: 0,
     fat: 0,
     sugar: 0
 };
+
+let baseNutritionData = null;
 
 async function saveFoodToGoogle(entry){
 
@@ -65,15 +69,23 @@ const match = foodMaster.find(item =>
 
 if (match) {
 
+    const baseAmount =
+        Number(match.BaseAmount) || 1;
+
+    const multiplier =
+        quantity / baseAmount;
+
     nutritionData = {
         restaurant: match.Restaurant,
         food: match.Food,
         description: match.Description,
-        calories: Number(match.Calories) * quantity,
-        protein: Number(match.Protein) * quantity,
-        carbs: Number(match.Carbs) * quantity,
-        fat: Number(match.Fat) * quantity,
-        sugar: Number(match.Sugar) * quantity
+        unitType: match.UnitType || "",
+        baseAmount: baseAmount,
+        calories: Number(match.Calories) * multiplier,
+        protein: Number(match.Protein) * multiplier,
+        carbs: Number(match.Carbs) * multiplier,
+        fat: Number(match.Fat) * multiplier,
+        sugar: Number(match.Sugar) * multiplier
     };
 
     document.getElementById("aiRestaurant").innerHTML =
@@ -203,8 +215,7 @@ async function saveFood() {
     const mealType =
         document.getElementById("mealType").value;
 
-    const notes =
-        document.getElementById("notes").value.trim();
+
 
     if(foodName === "")
     {
@@ -225,7 +236,6 @@ const entry = {
     carbs: nutritionData.carbs,
     fat: nutritionData.fat,
     sugar: nutritionData.sugar,
-    notes: notes
 };
 
 const result =
@@ -252,8 +262,6 @@ if (
     document.getElementById("foodName").value = "";
 
     document.getElementById("quantity").value = "1";
-
-    document.getElementById("notes").value = "";
 
 nutritionData = {
     restaurant: "",
@@ -285,6 +293,12 @@ window.onload = function () {
         .addEventListener(
             "input",
             searchFoodSuggestions
+        );
+    document
+        .getElementById("quantity")
+        .addEventListener(
+            "input",
+            recalculateNutrition
         );
 };
 
@@ -355,86 +369,138 @@ div.innerHTML =
 
         });
 }
+
+
 function selectFood(item) {
 
-    document.getElementById(
-        "foodName"
-    ).value =
+    document.getElementById("foodName").value =
         item.Food;
 
-    document.getElementById(
-        "foodSuggestions"
-    ).innerHTML = "";
+    document.getElementById("foodSuggestions").innerHTML =
+        "";
+
+const baseAmount =
+    Number(item["Base Amount"]) || 1;
+
+document.getElementById("quantity").value =
+    baseAmount;
+
 
     nutritionData = {
-
-        restaurant:
-            item.Restaurant,
-
-        food:
-            item.Food,
-
-        description:
-            item.Description,
-
-        calories:
-            Number(item.Calories),
-
-        protein:
-            Number(item.Protein),
-
-        carbs:
-            Number(item.Carbs),
-
-        fat:
-            Number(item.Fat),
-
-        sugar:
-            Number(item.Sugar)
-
+        restaurant: item.Restaurant,
+        food: item.Food,
+        description: item.Description,
+        unitType: item["Unit Type"] || "",
+        baseAmount: baseAmount,
+        calories: Number(item.Calories),
+        protein: Number(item.Protein),
+        carbs: Number(item.Carbs),
+        fat: Number(item.Fat),
+        sugar: Number(item.Sugar)
     };
 
-    document.getElementById(
-        "aiRestaurant"
-    ).innerHTML =
+document.getElementById("quantityUnit").innerHTML =
+    nutritionData.unitType || "-";
+
+    baseNutritionData = {
+        calories: Number(item.Calories),
+        protein: Number(item.Protein),
+        carbs: Number(item.Carbs),
+        fat: Number(item.Fat),
+        sugar: Number(item.Sugar),
+        baseAmount: baseAmount
+    };
+
+    document.getElementById("aiRestaurant").innerHTML =
         nutritionData.restaurant;
 
-    document.getElementById(
-        "aiFood"
-    ).innerHTML =
+    document.getElementById("aiFood").innerHTML =
         nutritionData.food;
 
-    document.getElementById(
-        "aiDescription"
-    ).innerHTML =
+    document.getElementById("aiDescription").innerHTML =
         nutritionData.description;
 
-    document.getElementById(
-        "aiCalories"
-    ).innerHTML =
+    document.getElementById("aiCalories").innerHTML =
         nutritionData.calories;
 
-    document.getElementById(
-        "aiProtein"
-    ).innerHTML =
+    document.getElementById("aiProtein").innerHTML =
         nutritionData.protein + "g";
 
-    document.getElementById(
-        "aiCarbs"
-    ).innerHTML =
+    document.getElementById("aiCarbs").innerHTML =
         nutritionData.carbs + "g";
 
-    document.getElementById(
-        "aiFat"
-    ).innerHTML =
+    document.getElementById("aiFat").innerHTML =
         nutritionData.fat + "g";
 
-    document.getElementById(
-        "aiSugar"
-    ).innerHTML =
+    document.getElementById("aiSugar").innerHTML =
         nutritionData.sugar + "g";
 
-    document.getElementById(
-        "saveBtn"
-    ).disabled = false;
+    document.getElementById("saveBtn").disabled =
+        false;
+}
+
+
+function recalculateNutrition() {
+
+    console.log(
+        "RECALCULATE FIRED",
+        baseNutritionData
+    );
+
+    if (!baseNutritionData) {
+        return;
+    }
+
+    const quantity =
+        Number(
+            document.getElementById("quantity").value
+        ) || 1;
+
+    const multiplier =
+        quantity / baseNutritionData.baseAmount;
+
+    nutritionData.calories =
+        Math.round(
+            baseNutritionData.calories *
+            multiplier * 10
+        ) / 10;
+
+    nutritionData.protein =
+        Math.round(
+            baseNutritionData.protein *
+            multiplier * 10
+        ) / 10;
+
+    nutritionData.carbs =
+        Math.round(
+            baseNutritionData.carbs *
+            multiplier * 10
+        ) / 10;
+
+    nutritionData.fat =
+        Math.round(
+            baseNutritionData.fat *
+            multiplier * 10
+        ) / 10;
+
+    nutritionData.sugar =
+        Math.round(
+            baseNutritionData.sugar *
+            multiplier * 10
+        ) / 10;
+
+    document.getElementById("aiCalories").innerHTML =
+        nutritionData.calories;
+
+    document.getElementById("aiProtein").innerHTML =
+        nutritionData.protein + "g";
+
+    document.getElementById("aiCarbs").innerHTML =
+        nutritionData.carbs + "g";
+
+    document.getElementById("aiFat").innerHTML =
+        nutritionData.fat + "g";
+
+    document.getElementById("aiSugar").innerHTML =
+        nutritionData.sugar + "g";
 }
