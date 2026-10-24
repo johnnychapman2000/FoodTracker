@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
+	<title>Workout</title>
+
+	<link rel="stylesheet" href="styles.css?v=3">
+	<script src="api.js?v=1"></script>
+	<script src="navigation.js"></script>
+</head>
+
+<body>
+	<div class="hero workout-hero">
+
+		<img id="workoutHero" class="workout-hero-image" src="images/ChestShouldersHighlited.png" alt="Chest and shoulders workout highlight">
+
+		<div class="workout-hero-overlay">
+
+			<div id="workoutTitle" class="title">
+				Loading...
+			</div>
+
+			<div class="workout-progress-wrap">
+
+				<div class="workout-progress-top">
+					<span>Progress</span>
+					<span id="progressPercent">0%</span>
+				</div>
+
+				<div class="workout-progress-line">
+					<div id="progressFill" class="workout-progress-fill"></div>
+				</div>
+
+				<div id="prog" class="prog"></div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<div id="list"></div>
+
+
+
+<div id='workoutModal' class='modal'><div class='content'><h3 id='ename'></h3><input id='sets' placeholder='Sets'><input id='reps' placeholder='Reps'><input id='weight' placeholder='Weight'>
+
+<button id='saveBtn' class='btn save' onclick='saveExercise()'>Save Workout</button><button class='btn cancel' onclick='closeWorkout()'>Cancel</button></div></div>
+
+<div id='quickModal' class='modal'>
+	<div class='content'>
+		<h3>Quick Entry</h3>
+
+		<select id='area' onchange='loadQuickExercises()'>
+			<option>Abs</option>
+			<option>Back</option>
+			<option>Biceps</option>
+			<option>Body</option>
+			<option>Cardio</option>
+			<option>Chest</option>
+			<option>Legs</option>
+			<option>Shoulders</option>
+			<option>Stretching</option>
+			<option>Triceps</option>
+		</select>
+
+		<select id='quickExercise'
+			onchange='quickExerciseChanged()'>
+		</select>
+
+		<div id='quickFields'></div>
+
+		<button class='btn save'
+			onclick='saveQuickEntry()'>
+			Save
+		</button>
+
+		<button class='btn cancel'
+			onclick='quickModal.style.display="none"'>
+			Cancel
+		</button>
+	</div>
+</div>
+
+<div id="navigation"></div>
+<script src="profile.js"></script>
+<script src="cache.js"></script>
+<script src="workoutEntry.js?v=1"></script>	
+<script src="workout.js?v=9"></script>
+<script src="quickEntry.js"></script>
+</body>
+</html>
